@@ -132,3 +132,19 @@ body{background:#101114}.app-shell{background:#101114}
 .generated-image img{display:block;width:100%;max-height:620px;object-fit:contain;background:#111;border:1px solid #41414c;border-radius:13px}
 .download-image{display:inline-flex;justify-content:center;align-items:center;padding:11px 16px;border-radius:9px;background:linear-gradient(100deg,#c4b5fd,#8b5cf6);color:#171321;text-decoration:none;font-size:12px;font-weight:700}
 .tool-card .notice{white-space:normal}
+
+
+/* Productivity and accessibility polish */
+.conversation-tools{display:flex;align-items:center;justify-content:space-between;gap:12px;max-width:790px;width:100%;margin:0 auto 8px;color:#858694;font-size:10px}
+.message-text{font-size:14px;line-height:1.8;color:#e8e6ed;overflow-wrap:anywhere}
+.message-text h2,.message-text h3{font-family:'Space Grotesk',sans-serif;color:#f5f2fc;margin:14px 0 7px}
+.message-text strong{color:#fff;font-weight:700}
+.message-text .inline-code{background:#34313d;color:#d7c7ff;padding:2px 5px;border-radius:5px;font:12px ui-monospace,monospace}
+.message-text .code-output{margin:10px 0;background:#111218;border:1px solid #3b3945}
+.md-list-item{display:block;padding-left:5px}
+.message-actions{display:flex;gap:7px;margin-top:8px}
+.message-actions button{border:1px solid #393943;background:#202127;color:#a9a6b5;border-radius:7px;padding:5px 9px;font-size:10px;cursor:pointer}
+.message-actions button:hover{border-color:#7562b0;color:#e4d9ff}
+.settings-card .text-button{cursor:pointer}
+button:focus-visible,a:focus-visible,textarea:focus-visible{outline:2px solid #a78bfa;outline-offset:3px}
+@media(max-width:760px){.conversation-tools{padding:0 3px}.message-text{font-size:13px}.message-actions button{padding:7px 11px}}
