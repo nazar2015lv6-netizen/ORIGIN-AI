@@ -212,7 +212,7 @@ function bind() {
       try {
         if (!('gpu' in navigator)) throw new Error('WebGPU is not available in this browser/device. Try updated Chrome or Edge with hardware acceleration enabled.');
         if (!window.originImageClient) {
-          const { Txt2ImgWorkerClient } = await import('https://esm.sh/web-txt2img@0.3.1');
+          const { Txt2ImgWorkerClient } = await import('web-txt2img');
           window.originImageClient = Txt2ImgWorkerClient.createDefault();
         }
         const client = window.originImageClient;
