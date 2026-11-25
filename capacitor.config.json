@@ -1,0 +1,8 @@
+{
+  "appId": "com.origincore.ai",
+  "appName": "ORIGIN AI",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https"
+  }
+}
