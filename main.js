@@ -69,7 +69,7 @@ function bind(){
     const response=await fetch('/api/chat',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({messages:messages.slice(-13).map(m=>({role:m.role,content:m.text}))})
+      body:JSON.stringify({messages:messages.slice(-12,-1).map(m=>({role:m.role,content:m.text}))})
     });
     const data=await response.json().catch(()=>({}));
     if(!response.ok) throw new Error(data.error || 'Не вдалося отримати відповідь від AI.');
