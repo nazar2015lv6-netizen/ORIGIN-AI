@@ -7,7 +7,7 @@ const icons = {
 };
 let active = 'chat';
 let messages = [{role:'assistant', text:'Привіт! Я ORIGIN AI. Чим можу допомогти сьогодні?'}];
-let credits = 120;
+let credits = 120;\nlet sending = false;
 
 function navItem(id, label, icon) {
   return `<button class="nav-item ${active===id?'active':''}" data-page="${id}"><span>${icon}</span><b>${label}</b></button>`;
@@ -57,7 +57,30 @@ function bind(){
  document.querySelector('#newChat')?.addEventListener('click',()=>{messages=[{role:'assistant',text:'Нова розмова розпочалася. Чим можу допомогти?'}];active='chat';shell()});
  document.querySelector('#mobileMenu')?.addEventListener('click',()=>document.querySelector('.sidebar').classList.toggle('show'));
  document.querySelectorAll('[data-suggest]').forEach(b=>b.onclick=()=>{document.querySelector('#promptInput').value=b.dataset.suggest;document.querySelector('#promptInput').focus()});
- document.querySelector('#chatForm')?.addEventListener('submit',e=>{e.preventDefault();const input=document.querySelector('#promptInput');const t=input.value.trim();if(!t)return;messages.push({role:'user',text:t},{role:'assistant',text:'Демо-режим: інтерфейс готовий, але AI-модель ще не підключена. Щоб отримувати справжні відповіді, потрібно налаштувати серверний API-ключ.'});credits=Math.max(0,credits-1);shell()});
+ document.querySelector('#chatForm')?.addEventListener('submit',async e=>{
+  e.preventDefault();
+  const input=document.querySelector('#promptInput');
+  const t=input.value.trim();
+  if(!t || sending) return;
+  sending=true;
+  messages.push({role:'user',text:t},{role:'assistant',text:'Думаю…'});
+  shell();
+  try {
+    const response=await fetch('/api/chat',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({messages:messages.slice(-13).map(m=>({role:m.role,content:m.text}))})
+    });
+    const data=await response.json().catch(()=>({}));
+    if(!response.ok) throw new Error(data.error || 'Не вдалося отримати відповідь від AI.');
+    messages[messages.length-1].text=data.reply || 'AI не повернув текстову відповідь.';
+  } catch(err) {
+    messages[messages.length-1].text=err.message || 'Сталася помилка. Спробуй ще раз пізніше.';
+  } finally {
+    sending=false;
+    shell();
+  }
+ });
  document.querySelector('#generate')?.addEventListener('click',()=>{const p=document.querySelector('#toolPrompt').value.trim();if(!p){document.querySelector('#toolResult').innerHTML='<p class="warn">Спочатку напиши опис.</p>';return;}document.querySelector('#toolResult').innerHTML='<div class="notice">Інтерфейс готовий. Для справжньої генерації потрібно підключити API відповідного сервісу. Не вставляй секретні API-ключі у фронтенд.</div>';});
 }
 shell();
