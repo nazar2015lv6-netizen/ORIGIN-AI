@@ -68,8 +68,8 @@ function pageContent() {
       ${hasConversation ? '' : '<div class="suggestions"><button data-suggest="Give me 5 original ideas for a creative project"><span class="suggestion-icon idea">✧</span><span><b>Explore ideas</b><small>Find inspiration for your next project</small></span><i>↗</i></button><button data-suggest="Explain a difficult topic in simple words, with an example"><span class="suggestion-icon learn">⌁</span><span><b>Learn something</b><small>Make complex topics feel simple</small></span><i>↗</i></button><button data-suggest="Help me build a modern responsive website using HTML, CSS and JavaScript"><span class="suggestion-icon code">⌘</span><span><b>Build with code</b><small>Turn your idea into a real project</small></span><i>↗</i></button></div>'}
     </div>`;
   }
-  if (active === 'image') return toolPage('AI Image','Turn a text prompt into a unique image.','Describe the image you want to create...','Generate image','▧','Image generation is not connected yet. This free build does not use a paid image API.');
-  if (active === 'video') return toolPage('AI Video','Create short videos from your ideas.','Describe the video you want to create...','Generate video · 5 sec','▷','5-second video generation needs a separate video model. It is not enabled in this free browser build.');
+  if (active === 'image') return toolPage('AI Image','Create an image from your words — generated on your own device.','A cinematic landscape with glowing mountains at sunset...','Generate image','▧','Free local generation · WebGPU required · First use downloads the image model (large download).');
+  if (active === 'video') return toolPage('AI Video','Create short videos from your ideas.','Describe the video you want to create...','Open free Video Studio','▷','A full video model needs several gigabytes of GPU memory and a large download. We are keeping this section free and will not pretend a still image is a video.');
   if (active === 'code') return toolPage('AI Code','Create, explain, and improve code with the local AI model.','Describe the code you need...','Generate code','⌘','Uses the same free on-device AI model as AI Chat.');
   if (active === 'history') return `<div class="page-heading"><div class="eyebrow">LIBRARY</div><h1>History</h1><p>Your recent conversation is saved in this browser.</p></div><div class="empty"><span>◷</span><b>${messages.length > 1 ? 'Recent conversation saved' : 'Nothing here yet'}</b><small>${messages.length > 1 ? 'Open AI Chat to continue your conversation.' : 'Start a new chat to see it here.'}</small><button class="primary history-open" id="openChat">Open AI Chat</button></div>`;
   return `<div class="page-heading"><div class="eyebrow">PERSONALIZATION</div><h1>Settings</h1><p>Manage your ORIGIN AI experience.</p></div><div class="settings-card"><div><b>AI mode</b><small>Runs locally in your browser</small></div><span>Free · No API key</span></div><div class="settings-card"><div><b>Interface language</b><small>App language</small></div><span>English</span></div><div class="settings-card"><div><b>Theme</b><small>Appearance</small></div><span>Dark</span></div><div class="settings-card"><div><b>Conversation data</b><small>Stored only in this browser</small></div><button class="text-button" id="clearHistory">Clear history</button></div><div class="notice">The first AI message downloads a language model to your device. This can take a few minutes and uses device storage.</div>`;
@@ -154,8 +154,46 @@ function bind() {
     const prompt = document.querySelector('#toolPrompt').value.trim();
     const result = document.querySelector('#toolResult');
     if (!prompt) { result.innerHTML = '<p class="warn">Please enter a prompt first.</p>'; return; }
-    if (active !== 'code') {
-      result.innerHTML = '<div class="notice">This feature is not available in the free browser build yet. No payment or API key has been requested.</div>';
+    if (active === 'video') {
+      result.innerHTML = '<div class="notice">Free video generation is still being prepared. It requires a compatible high-performance GPU and a multi-gigabyte model download. No paid API or hidden charge is used.</div>';
+      return;
+    }
+    if (active === 'image') {
+      const button = document.querySelector('#generate');
+      button.disabled = true;
+      button.textContent = 'Preparing image model…';
+      result.innerHTML = '<div class="notice" id="imageStatus">Checking WebGPU support… The first setup downloads the model to this browser. This may take several minutes.</div>';
+      try {
+        if (!('gpu' in navigator)) throw new Error('WebGPU is not available in this browser/device. Try updated Chrome or Edge with hardware acceleration enabled.');
+        if (!window.originImageClient) {
+          const { Txt2ImgWorkerClient } = await import('https://esm.sh/web-txt2img@0.3.1');
+          window.originImageClient = Txt2ImgWorkerClient.createDefault();
+        }
+        const client = window.originImageClient;
+        const caps = await client.detect();
+        if (!caps.webgpu) throw new Error('A compatible WebGPU graphics adapter was not found on this device.');
+        const status = document.querySelector('#imageStatus');
+        const loaded = await client.load('sd-turbo', { backendPreference: ['webgpu'] }, p => {
+          if (status?.isConnected) status.textContent = p.message || 'Downloading image model…';
+        });
+        if (!loaded?.ok) throw new Error(loaded?.message || 'Could not load the image model.');
+        if (status?.isConnected) status.textContent = 'Generating your image…';
+        const { promise } = client.generate({ prompt, seed: Math.floor(Math.random() * 1000000) }, e => {
+          if (status?.isConnected && e.phase) status.textContent = 'Generating image · ' + e.phase;
+        });
+        const generated = await promise;
+        if (!generated.ok || !generated.blob) throw new Error(generated.message || generated.reason || 'Image generation failed.');
+        const url = URL.createObjectURL(generated.blob);
+        result.innerHTML = '<div class="generated-image"><img alt="AI generated result"><a class="download-image" download="origin-ai-image.png">Download image</a></div>';
+        result.querySelector('img').src = url;
+        result.querySelector('a').href = url;
+      } catch (error) {
+        result.innerHTML = '<div class="notice"></div>';
+        result.querySelector('.notice').textContent = error.message || 'Image generation could not start.';
+      } finally {
+        button.disabled = false;
+        button.innerHTML = 'Generate image <span>→</span>';
+      }
       return;
     }
     const button = document.querySelector('#generate');
