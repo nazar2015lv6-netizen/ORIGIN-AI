@@ -73,7 +73,7 @@ function pageContent() {
   if (active === 'video') return toolPage('AI Video','Create short videos from your ideas.','Describe the video you want to create...','Open free Video Studio','▷','A full video model needs several gigabytes of GPU memory and a large download. We are keeping this section free and will not pretend a still image is a video.');
   if (active === 'code') return toolPage('AI Code','Create, explain, and improve code with the local AI model.','Describe the code you need...','Generate code','⌘','Uses the same free on-device AI model as AI Chat.');
   if (active === 'history') return `<div class="page-heading"><div class="eyebrow">LIBRARY</div><h1>History</h1><p>Your recent conversation is saved in this browser.</p></div><div class="empty"><span>◷</span><b>${messages.length > 1 ? 'Recent conversation saved' : 'Nothing here yet'}</b><small>${messages.length > 1 ? 'Open AI Chat to continue your conversation.' : 'Start a new chat to see it here.'}</small><button class="primary history-open" id="openChat">Open AI Chat</button></div>`;
-  return `<div class="page-heading"><div class="eyebrow">PERSONALIZATION</div><h1>Settings</h1><p>Manage your ORIGIN AI experience.</p></div><div class="settings-card"><div><b>AI mode</b><small>Runs locally in your browser</small></div><span>Free · No API key</span></div><div class="settings-card"><div><b>Interface language</b><small>App language</small></div><span>English</span></div><div class="settings-card"><div><b>Theme</b><small>Appearance</small></div><span>Dark</span></div><div class="settings-card"><div><b>Export your data</b><small>Download a backup of your conversations</small></div><button class="text-button" id="exportData">Download backup</button></div><div class="settings-card"><div><b>Conversation data</b><small>Stored only in this browser</small></div><button class="text-button" id="clearHistory">Clear history</button></div><div class="notice">Your chats stay in this browser. The first AI message downloads a language model to your device; this can take several minutes and uses device storage. Image generation may download an additional model of about 2.3 GB. No paid API is used.</div>`;
+  return `<div class="page-heading"><div class="eyebrow">PERSONALIZATION</div><h1>Settings</h1><p>Manage your ORIGIN AI experience.</p></div><div class="settings-card"><div><b>AI mode</b><small>Runs locally in your browser</small></div><span>Free · No API key</span></div><div class="settings-card"><div><b>Interface language</b><small>App language</small></div><span>English</span></div><div class="settings-card"><div><b>Theme</b><small>Appearance</small></div><span>Dark</span></div><div class="settings-card"><div><b>Export your data</b><small>Download a backup of your conversations</small></div><button class="text-button" id="exportData">Download backup</button></div><div class="settings-card"><div><b>Restore a backup</b><small>Import a previous ORIGIN AI backup file</small></div><button class="text-button" id="importData">Import backup</button><input id="backupFile" type="file" accept="application/json,.json" hidden></div><div class="settings-card"><div><b>Conversation data</b><small>Stored only in this browser</small></div><button class="text-button" id="clearHistory">Clear history</button></div><div class="notice">Your chats stay in this browser. The first AI message downloads a language model to your device; this can take several minutes and uses device storage. Image generation may download an additional model of about 2.3 GB. No paid API is used.</div>`;
 }
 function renderMarkdown(source) {
   const escaped = escapeHtml(source);
@@ -153,6 +153,27 @@ function bind() {
 
   document.querySelector('#exportChat')?.addEventListener('click', exportChat);
   document.querySelector('#exportData')?.addEventListener('click', exportData);
+  document.querySelector('#importData')?.addEventListener('click', () => document.querySelector('#backupFile')?.click());
+  document.querySelector('#backupFile')?.addEventListener('change', async event => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    try {
+      const backup = JSON.parse(await file.text());
+      if (backup.app !== 'ORIGIN AI' || !Array.isArray(backup.messages) || backup.messages.some(m => !['user','assistant'].includes(m.role) || typeof m.text !== 'string')) {
+        throw new Error('This file is not a valid ORIGIN AI backup.');
+      }
+      if (!confirm('Import this backup and replace the current conversation on this device?')) return;
+      messages = backup.messages.slice(-80);
+      saveMessages();
+      active = 'chat';
+      shell();
+    } catch (error) {
+      alert(error.message || 'Could not read this backup file.');
+    } finally {
+      event.target.value = '';
+    }
+  });
+
   document.querySelectorAll('[data-copy]').forEach(button => button.addEventListener('click', async () => {
     const item = messages[Number(button.dataset.copy)];
     if (!item) return;
