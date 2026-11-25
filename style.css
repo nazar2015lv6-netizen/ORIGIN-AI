@@ -148,3 +148,25 @@ body{background:#101114}.app-shell{background:#101114}
 .settings-card .text-button{cursor:pointer}
 button:focus-visible,a:focus-visible,textarea:focus-visible{outline:2px solid #a78bfa;outline-offset:3px}
 @media(max-width:760px){.conversation-tools{padding:0 3px}.message-text{font-size:13px}.message-actions button{padding:7px 11px}}
+
+
+/* Membership tiers */
+.plans-gradient{background:linear-gradient(90deg,#c4b5fd,#67e8f9);background-clip:text;-webkit-background-clip:text;color:transparent}
+.plans-grid{width:min(100%,1000px);margin:8px auto 0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;align-items:stretch}
+.plan-card{position:relative;display:flex;flex-direction:column;min-width:0;padding:20px 17px 17px;background:linear-gradient(155deg,#202027,#17181e);border:1px solid #383842;border-radius:15px}
+.plan-card.featured{border-color:#8d73d5;box-shadow:0 0 0 1px #8d73d522,0 14px 40px #0003}
+.plan-card.current{border-color:#55545f}
+.plan-tag{font-size:8px;letter-spacing:1.2px;font-weight:800;color:#a99be0;min-height:20px}
+.plan-card h2{font:600 25px 'Space Grotesk',sans-serif;margin:9px 0 5px;color:#f4f1fb;overflow-wrap:anywhere}
+.plan-desc{min-height:42px;color:#9999a5;font-size:10px;line-height:1.55;margin:0 0 15px}
+.plan-price{font:600 19px 'Space Grotesk',sans-serif;color:#eee;margin:0 0 17px}
+.plan-card ul{list-style:none;padding:14px 0 18px;margin:0;border-top:1px solid #ffffff12;flex:1}
+.plan-card li{display:flex;gap:7px;color:#c5c4ce;font-size:10px;line-height:1.5;margin:0 0 10px}
+.plan-card li span{color:#a995f5;font-weight:800}
+.plan-button{width:100%;border:1px solid #5b4b83;background:#292333;color:#d9ccff;border-radius:9px;padding:10px 8px;font-size:10px;font-weight:700;cursor:pointer}
+.plan-button.selected{border-color:#45454d;background:#303036;color:#aaa;cursor:default}
+.plan-button:not(:disabled):hover{background:#393049;border-color:#9a80e8}
+.plans-footnote{max-width:1000px;margin:17px auto 0;padding:14px 16px;border:1px solid #383842;border-radius:11px;background:#191a20;color:#d5d2df}
+.plans-footnote b{font-size:11px}.plans-footnote p{font-size:10px;line-height:1.6;color:#9c9ba7;margin:5px 0 0}
+@media(max-width:1000px){.plans-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){.plans-grid{grid-template-columns:1fr}.plan-desc{min-height:0}.plan-card{padding:18px}.plans-footnote{margin-top:12px}}
