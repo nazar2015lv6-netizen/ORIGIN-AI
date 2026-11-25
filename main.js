@@ -8,6 +8,8 @@ let active = 'chat';
 let busy = false;
 let credits = 120;
 let messages = loadMessages();
+const MEMBERSHIP_PRICES = { Pro: 99, Extra: 199, Modificated: 399 };
+const MEMBERSHIP_CURRENCY = 'UAH / month';
 
 function loadMessages() {
   try {
@@ -55,8 +57,50 @@ function shell() {
       </main>
     </div>`;
   bind();
+  if (!localStorage.getItem('origin-ai-plans-intro-seen')) showPlansIntro();
   const messageList = document.querySelector('#messages');
   if (messageList) messageList.scrollTop = messageList.scrollHeight;
+}
+function showPlansIntro() {
+  if (document.querySelector('#plansIntro')) return;
+  const plans = [
+    { name:'Free', price:'0 ₴', detail:'Core tools to get started' },
+    { name:'Pro', price:'99 ₴ / month', detail:'More room for everyday work' },
+    { name:'Extra', price:'199 ₴ / month', detail:'Expanded creative workspace' },
+    { name:'Modificated', price:'399 ₴ / month', detail:'Maximum planned customization' }
+  ];
+  const overlay = document.createElement('div');
+  overlay.id = 'plansIntro';
+  overlay.className = 'plans-intro-overlay';
+  overlay.innerHTML = `
+    <section class="plans-intro" role="dialog" aria-modal="true" aria-labelledby="plansIntroTitle">
+      <button class="plans-intro-close" id="closePlansIntro" aria-label="Close">×</button>
+      <div class="eyebrow">WELCOME TO ORIGIN AI</div>
+      <h2 id="plansIntroTitle">Choose your experience</h2>
+      <p class="plans-intro-sub">Start free. Upgrade only when you need more.</p>
+      <div class="intro-plan-list">${plans.map(plan => `
+        <div class="intro-plan-row">
+          <div><b>${plan.name}</b><small>${plan.detail}</small></div>
+          <strong>${plan.price}</strong>
+        </div>`).join('')}
+      </div>
+      <p class="plans-intro-note">These are proposed prices, not active offers. Checkout and paid features are not connected yet. You cannot be charged here.</p>
+      <button class="primary" id="introViewPlans">Explore plans <span>→</span></button>
+      <button class="intro-continue" id="introContinue">Continue with Free</button>
+    </section>`;
+  root.appendChild(overlay);
+  const close = () => {
+    localStorage.setItem('origin-ai-plans-intro-seen', '1');
+    overlay.remove();
+  };
+  overlay.querySelector('#closePlansIntro').addEventListener('click', close);
+  overlay.querySelector('#introContinue').addEventListener('click', close);
+  overlay.querySelector('#introViewPlans').addEventListener('click', () => {
+    close();
+    active = 'plans';
+    shell();
+  });
+  overlay.addEventListener('click', event => { if (event.target === overlay) close(); });
 }
 function pageContent() {
   if (active === 'chat') {
@@ -81,9 +125,9 @@ function pageContent() {
 function plansPage() {
   const plans = [
     { name:'Free', tag:'START HERE', price:'Free', desc:'Explore the essentials at no cost.', features:['AI chat with local model','AI code assistant','Basic chat history on this device','Local image generation when supported'], current:true },
-    { name:'Pro', tag:'FOR EVERYDAY CREATORS', price:'Paid plan', desc:'More room for serious everyday work.', features:['Everything in Free','Higher usage limits','Faster access to supported models','More saved conversations','Priority feature access'] },
-    { name:'Extra', tag:'FOR POWER USERS', price:'Paid plan', desc:'More capability for demanding projects.', features:['Everything in Pro','Expanded image tools and limits','Advanced code workflows','Larger project workspace','Early access to new tools'] },
-    { name:'Modificated', tag:'ULTIMATE WORKSPACE', price:'Paid plan', desc:'The most customizable ORIGIN AI experience.', features:['Everything in Extra','Advanced personalization','Custom workspace presets','Expanded creative workflow limits','Experimental features when available'] }
+    { name:'Pro', tag:'FOR EVERYDAY CREATORS', price:'99 ₴ / month', desc:'More room for serious everyday work.', features:['Everything in Free','Higher usage limits','Faster access to supported models','More saved conversations','Priority feature access'] },
+    { name:'Extra', tag:'FOR POWER USERS', price:'199 ₴ / month', desc:'More capability for demanding projects.', features:['Everything in Pro','Expanded image tools and limits','Advanced code workflows','Larger project workspace','Early access to new tools'] },
+    { name:'Modificated', tag:'ULTIMATE WORKSPACE', price:'399 ₴ / month', desc:'The most customizable ORIGIN AI experience.', features:['Everything in Extra','Advanced personalization','Custom workspace presets','Expanded creative workflow limits','Experimental features when available'] }
   ];
   return `
     <div class="page-heading"><div class="eyebrow">ORIGIN AI MEMBERSHIPS</div><h1>Choose your <span class="plans-gradient">power.</span></h1><p>Start free and upgrade when you need more. No surprise charges.</p></div>
@@ -94,7 +138,7 @@ function plansPage() {
         <ul>${plan.features.map(feature => `<li><span>✓</span>${feature}</li>`).join('')}</ul>
         ${plan.current ? '<button class="plan-button selected" disabled>Current plan</button>' : '<button class="plan-button" type="button" data-plan="' + plan.name + '">Coming soon</button>'}
       </article>`).join('')}</div>
-    <div class="plans-footnote"><b>Transparent by design</b><p>Paid plans are being designed. Checkout, subscriptions and premium model access are not connected yet, so no payment can be taken and no upgrade is activated today. The feature list describes the planned direction, not features currently available.</p></div>
+    <div class="plans-footnote"><b>Transparent by design</b><p>Prices shown are proposed monthly prices, not active offers. Checkout, subscriptions, and automatic premium access are not connected yet, so no payment can be taken and no upgrade is activated today. Feature lists describe planned benefits, not features currently available.</p></div>
   `;
 }
 
@@ -211,7 +255,7 @@ function bind() {
   }));
 
   document.querySelectorAll('[data-plan]').forEach(button => button.addEventListener('click', () => {
-    alert(button.dataset.plan + ' is planned, but payments and subscriptions are not connected yet. You will not be charged.');
+    alert(button.dataset.plan + ' is not available to purchase yet. Payments and premium access are not connected, so you will not be charged.');
   }));
   document.querySelector('#openChat')?.addEventListener('click', () => { active = 'chat'; shell(); });
   document.querySelector('#clearHistory')?.addEventListener('click', () => {
