@@ -57,11 +57,11 @@ function shell() {
 }
 function pageContent() {
   if (active === 'chat') return `
-    <div class="welcome"><div class="welcome-mark">✦</div><h1>What can I help with?</h1><p>Ask anything, explore ideas, or create something new.</p></div>
+    <div class="welcome"><div class="welcome-orbit"><div class="welcome-mark">✦</div></div><div class="welcome-kicker"><i></i> YOUR CREATIVE AI WORKSPACE</div><h1>Make something<br><span>extraordinary.</span></h1><p>Ideas, answers, code and creativity — all starting with one message.</p></div>
     <div class="chat-wrap"><div class="model-status" id="modelStatus">Free on-device AI · Loads when you send your first message.</div>
       <div class="messages" id="messages">${messages.map(messageHtml).join('')}</div>
       <form id="chatForm" class="prompt"><textarea id="promptInput" rows="2" placeholder="Type your message..." ${busy?'disabled':''}></textarea><div class="prompt-bottom"><span>✦ Your messages stay in this browser.</span><button class="send" type="submit" ${busy?'disabled':''}>➤</button></div></form>
-      <div class="suggestions"><button data-suggest="Give me creative ideas for a new project">✦ Brainstorm ideas</button><button data-suggest="Explain a difficult topic in simple words">⌁ Explain something</button><button data-suggest="Help me write a website in HTML, CSS and JavaScript">⌘ Write some code</button></div>
+      <div class="suggestions"><button data-suggest="Give me 5 original ideas for a creative project"><span class="suggestion-icon idea">✧</span><span><b>Explore ideas</b><small>Find inspiration for your next project</small></span><i>↗</i></button><button data-suggest="Explain a difficult topic in simple words, with an example"><span class="suggestion-icon learn">⌁</span><span><b>Learn something</b><small>Make complex topics feel simple</small></span><i>↗</i></button><button data-suggest="Help me build a modern responsive website using HTML, CSS and JavaScript"><span class="suggestion-icon code">⌘</span><span><b>Build with code</b><small>Turn your idea into a real project</small></span><i>↗</i></button></div>
     </div>`;
   if (active === 'image') return toolPage('AI Image','Turn a text prompt into a unique image.','Describe the image you want to create...','Generate image','▧','Image generation is not connected yet. This free build does not use a paid image API.');
   if (active === 'video') return toolPage('AI Video','Create short videos from your ideas.','Describe the video you want to create...','Generate video · 5 sec','▷','5-second video generation needs a separate video model. It is not enabled in this free browser build.');
