@@ -63,6 +63,7 @@ function pageContent() {
     return `
     ${hasConversation ? '' : '<div class="welcome"><div class="welcome-orbit"><div class="welcome-mark">✦</div></div><div class="welcome-kicker"><i></i> YOUR CREATIVE AI WORKSPACE</div><h1>Make something<br><span>extraordinary.</span></h1><p>Ideas, answers, code and creativity — all starting with one message.</p></div>'}
     <div class="chat-wrap ${hasConversation ? 'has-conversation' : ''}"><div class="model-status" id="modelStatus">Free on-device AI · Loads when you send your first message.</div>
+      <div class="conversation-tools"><span>Private · Saved on this device</span><button type="button" class="text-button" id="exportChat">Export chat</button></div>
       <div class="messages" id="messages">${messages.map(messageHtml).join('')}</div>
       <form id="chatForm" class="prompt"><textarea id="promptInput" rows="2" placeholder="Type your message..." ${busy?'disabled':''}></textarea><div class="prompt-bottom"><span>✦ Your messages stay in this browser.</span><button class="send" type="submit" ${busy?'disabled':''}>➤</button></div></form>
       ${hasConversation ? '' : '<div class="suggestions"><button data-suggest="Give me 5 original ideas for a creative project"><span class="suggestion-icon idea">✧</span><span><b>Explore ideas</b><small>Find inspiration for your next project</small></span><i>↗</i></button><button data-suggest="Explain a difficult topic in simple words, with an example"><span class="suggestion-icon learn">⌁</span><span><b>Learn something</b><small>Make complex topics feel simple</small></span><i>↗</i></button><button data-suggest="Help me build a modern responsive website using HTML, CSS and JavaScript"><span class="suggestion-icon code">⌘</span><span><b>Build with code</b><small>Turn your idea into a real project</small></span><i>↗</i></button></div>'}
@@ -72,10 +73,40 @@ function pageContent() {
   if (active === 'video') return toolPage('AI Video','Create short videos from your ideas.','Describe the video you want to create...','Open free Video Studio','▷','A full video model needs several gigabytes of GPU memory and a large download. We are keeping this section free and will not pretend a still image is a video.');
   if (active === 'code') return toolPage('AI Code','Create, explain, and improve code with the local AI model.','Describe the code you need...','Generate code','⌘','Uses the same free on-device AI model as AI Chat.');
   if (active === 'history') return `<div class="page-heading"><div class="eyebrow">LIBRARY</div><h1>History</h1><p>Your recent conversation is saved in this browser.</p></div><div class="empty"><span>◷</span><b>${messages.length > 1 ? 'Recent conversation saved' : 'Nothing here yet'}</b><small>${messages.length > 1 ? 'Open AI Chat to continue your conversation.' : 'Start a new chat to see it here.'}</small><button class="primary history-open" id="openChat">Open AI Chat</button></div>`;
-  return `<div class="page-heading"><div class="eyebrow">PERSONALIZATION</div><h1>Settings</h1><p>Manage your ORIGIN AI experience.</p></div><div class="settings-card"><div><b>AI mode</b><small>Runs locally in your browser</small></div><span>Free · No API key</span></div><div class="settings-card"><div><b>Interface language</b><small>App language</small></div><span>English</span></div><div class="settings-card"><div><b>Theme</b><small>Appearance</small></div><span>Dark</span></div><div class="settings-card"><div><b>Conversation data</b><small>Stored only in this browser</small></div><button class="text-button" id="clearHistory">Clear history</button></div><div class="notice">The first AI message downloads a language model to your device. This can take a few minutes and uses device storage.</div>`;
+  return `<div class="page-heading"><div class="eyebrow">PERSONALIZATION</div><h1>Settings</h1><p>Manage your ORIGIN AI experience.</p></div><div class="settings-card"><div><b>AI mode</b><small>Runs locally in your browser</small></div><span>Free · No API key</span></div><div class="settings-card"><div><b>Interface language</b><small>App language</small></div><span>English</span></div><div class="settings-card"><div><b>Theme</b><small>Appearance</small></div><span>Dark</span></div><div class="settings-card"><div><b>Export your data</b><small>Download a backup of your conversations</small></div><button class="text-button" id="exportData">Download backup</button></div><div class="settings-card"><div><b>Conversation data</b><small>Stored only in this browser</small></div><button class="text-button" id="clearHistory">Clear history</button></div><div class="notice">Your chats stay in this browser. The first AI message downloads a language model to your device; this can take several minutes and uses device storage. Image generation may download an additional model of about 2.3 GB. No paid API is used.</div>`;
 }
-function messageHtml(message) {
-  return `<div class="message ${message.role}"><div class="message-avatar">${message.role === 'assistant' ? '✦' : 'U'}</div><div class="message-body"><small>${message.role === 'assistant' ? 'ORIGIN AI' : 'YOU'}</small><p>${escapeHtml(message.text)}</p></div></div>`;
+function renderMarkdown(source) {
+  const escaped = escapeHtml(source);
+  return escaped
+    .replace(/```([a-zA-Z0-9_-]*)\n?([\s\S]*?)```/g, (_, lang, code) => `<pre class="code-output"><code>${code.trim()}</code></pre>`)
+    .replace(/`([^`\n]+)`/g, '<code class="inline-code">$1</code>')
+    .replace(/^### (.*)$/gm, '<h3>$1</h3>')
+    .replace(/^## (.*)$/gm, '<h2>$1</h2>')
+    .replace(/^# (.*)$/gm, '<h2>$1</h2>')
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    .replace(/^[-*] (.*)$/gm, '<span class="md-list-item">• $1</span>')
+    .replace(/\n/g, '<br>');
+}
+function messageHtml(message, index) {
+  const actions = message.role === 'assistant' && index > 0
+    ? `<div class="message-actions"><button type="button" data-copy="${index}" title="Copy response">Copy</button></div>`
+    : '';
+  return `<div class="message ${message.role}"><div class="message-avatar">${message.role === 'assistant' ? '✦' : 'U'}</div><div class="message-body"><small>${message.role === 'assistant' ? 'ORIGIN AI' : 'YOU'}</small><div class="message-text">${renderMarkdown(message.text)}</div>${actions}</div></div>`;
+}
+function downloadFile(name, content, type = 'text/plain') {
+  const blob = new Blob([content], { type });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url; link.download = name; link.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+function exportChat() {
+  const body = messages.map(m => `## ${m.role === 'user' ? 'You' : 'ORIGIN AI'}\n\n${m.text}`).join('\n\n---\n\n');
+  downloadFile('origin-ai-chat.md', `# ORIGIN AI conversation\n\n${body}`, 'text/markdown');
+}
+function exportData() {
+  downloadFile('origin-ai-backup.json', JSON.stringify({ app: 'ORIGIN AI', version: 1, exportedAt: new Date().toISOString(), messages }, null, 2), 'application/json');
 }
 function toolPage(title, desc, placeholder, button, icon, note) {
   return `<div class="page-heading"><div class="eyebrow">✦ CREATIVE STUDIO</div><h1>${title}</h1><p>${desc}</p></div><div class="tool-card"><div class="tool-icon">${icon}</div><label>YOUR PROMPT</label><textarea id="toolPrompt" rows="4" placeholder="${placeholder}"></textarea><div class="tool-options"><span>Mode <b>${active === 'video' ? '5 seconds · 16:9' : 'Free browser mode'}</b></span></div><button class="primary" id="generate">${button} <span>→</span></button><small class="tool-note">${note}</small><div id="toolResult"></div></div>`;
