@@ -49,7 +49,7 @@ function shell() {
         </div>
       </aside>
       <main class="main">
-        <header class="topbar"><button class="mobile-menu" id="mobileMenu">☰</button><div class="crumb">ORIGIN AI <span>/</span> <b>${pageTitle()}</b></div><div class="top-actions"><span class="status"><i></i> Browser AI mode</span><div class="avatar small">O</div></div></header>
+        <header class="topbar"><button class="mobile-menu" id="mobileMenu">☰</button><div class="crumb"><b>${pageTitle()}</b><span class="model-pill">⌄ ORIGIN Free</span></div><div class="top-actions"><span class="status"><i></i> Browser AI mode</span><div class="avatar small">O</div></div></header>
         <section class="content" id="content">${pageContent()}</section>
       </main>
     </div>`;
@@ -57,11 +57,11 @@ function shell() {
 }
 function pageContent() {
   if (active === 'chat') return `
-    <div class="welcome"><div class="eyebrow"><span>✦</span> YOUR CREATIVE AI COMPANION</div><h1>Your idea.<br><em>Our intelligence.</em></h1><p>Ask, create, and explore. ORIGIN AI helps turn<br class="desktop"> your thoughts into something amazing.</p></div>
-    <div class="chat-wrap"><div class="model-status" id="modelStatus">Free on-device AI · The model loads when you send your first message.</div>
+    <div class="welcome"><div class="welcome-mark">✦</div><h1>What can I help with?</h1><p>Ask anything, explore ideas, or create something new.</p></div>
+    <div class="chat-wrap"><div class="model-status" id="modelStatus">Free on-device AI · Loads when you send your first message.</div>
       <div class="messages" id="messages">${messages.map(messageHtml).join('')}</div>
       <form id="chatForm" class="prompt"><textarea id="promptInput" rows="2" placeholder="Type your message..." ${busy?'disabled':''}></textarea><div class="prompt-bottom"><span>✦ Your messages stay in this browser.</span><button class="send" type="submit" ${busy?'disabled':''}>➤</button></div></form>
-      <div class="suggestions"><button data-suggest="Help me come up with a project idea">✦ Get an idea</button><button data-suggest="Explain a difficult topic simply">⌁ Explain a topic</button><button data-suggest="Write a plan for my project">▤ Create a plan</button></div>
+      <div class="suggestions"><button data-suggest="Give me creative ideas for a new project">✦ Brainstorm ideas</button><button data-suggest="Explain a difficult topic in simple words">⌁ Explain something</button><button data-suggest="Help me write a website in HTML, CSS and JavaScript">⌘ Write some code</button></div>
     </div>`;
   if (active === 'image') return toolPage('AI Image','Turn a text prompt into a unique image.','Describe the image you want to create...','Generate image','▧','Image generation is not connected yet. This free build does not use a paid image API.');
   if (active === 'video') return toolPage('AI Video','Create short videos from your ideas.','Describe the video you want to create...','Generate video · 5 sec','▷','5-second video generation needs a separate video model. It is not enabled in this free browser build.');
