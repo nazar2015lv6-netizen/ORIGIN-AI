@@ -54,15 +54,20 @@ function shell() {
       </main>
     </div>`;
   bind();
+  const messageList = document.querySelector('#messages');
+  if (messageList) messageList.scrollTop = messageList.scrollHeight;
 }
 function pageContent() {
-  if (active === 'chat') return `
-    <div class="welcome"><div class="welcome-orbit"><div class="welcome-mark">✦</div></div><div class="welcome-kicker"><i></i> YOUR CREATIVE AI WORKSPACE</div><h1>Make something<br><span>extraordinary.</span></h1><p>Ideas, answers, code and creativity — all starting with one message.</p></div>
-    <div class="chat-wrap"><div class="model-status" id="modelStatus">Free on-device AI · Loads when you send your first message.</div>
+  if (active === 'chat') {
+    const hasConversation = messages.some(message => message.role === 'user');
+    return `
+    ${hasConversation ? '' : '<div class="welcome"><div class="welcome-orbit"><div class="welcome-mark">✦</div></div><div class="welcome-kicker"><i></i> YOUR CREATIVE AI WORKSPACE</div><h1>Make something<br><span>extraordinary.</span></h1><p>Ideas, answers, code and creativity — all starting with one message.</p></div>'}
+    <div class="chat-wrap ${hasConversation ? 'has-conversation' : ''}"><div class="model-status" id="modelStatus">Free on-device AI · Loads when you send your first message.</div>
       <div class="messages" id="messages">${messages.map(messageHtml).join('')}</div>
       <form id="chatForm" class="prompt"><textarea id="promptInput" rows="2" placeholder="Type your message..." ${busy?'disabled':''}></textarea><div class="prompt-bottom"><span>✦ Your messages stay in this browser.</span><button class="send" type="submit" ${busy?'disabled':''}>➤</button></div></form>
-      <div class="suggestions"><button data-suggest="Give me 5 original ideas for a creative project"><span class="suggestion-icon idea">✧</span><span><b>Explore ideas</b><small>Find inspiration for your next project</small></span><i>↗</i></button><button data-suggest="Explain a difficult topic in simple words, with an example"><span class="suggestion-icon learn">⌁</span><span><b>Learn something</b><small>Make complex topics feel simple</small></span><i>↗</i></button><button data-suggest="Help me build a modern responsive website using HTML, CSS and JavaScript"><span class="suggestion-icon code">⌘</span><span><b>Build with code</b><small>Turn your idea into a real project</small></span><i>↗</i></button></div>
+      ${hasConversation ? '' : '<div class="suggestions"><button data-suggest="Give me 5 original ideas for a creative project"><span class="suggestion-icon idea">✧</span><span><b>Explore ideas</b><small>Find inspiration for your next project</small></span><i>↗</i></button><button data-suggest="Explain a difficult topic in simple words, with an example"><span class="suggestion-icon learn">⌁</span><span><b>Learn something</b><small>Make complex topics feel simple</small></span><i>↗</i></button><button data-suggest="Help me build a modern responsive website using HTML, CSS and JavaScript"><span class="suggestion-icon code">⌘</span><span><b>Build with code</b><small>Turn your idea into a real project</small></span><i>↗</i></button></div>'}
     </div>`;
+  }
   if (active === 'image') return toolPage('AI Image','Turn a text prompt into a unique image.','Describe the image you want to create...','Generate image','▧','Image generation is not connected yet. This free build does not use a paid image API.');
   if (active === 'video') return toolPage('AI Video','Create short videos from your ideas.','Describe the video you want to create...','Generate video · 5 sec','▷','5-second video generation needs a separate video model. It is not enabled in this free browser build.');
   if (active === 'code') return toolPage('AI Code','Create, explain, and improve code with the local AI model.','Describe the code you need...','Generate code','⌘','Uses the same free on-device AI model as AI Chat.');
@@ -94,19 +99,29 @@ async function getEngine(statusElement) {
   catch (error) { enginePromise = null; throw error; }
 }
 function bind() {
-  document.querySelectorAll('[data-page]').forEach(button => button.onclick = () => { active = button.dataset.page; shell(); });
+  document.querySelectorAll('[data-page]').forEach(button => button.onclick = () => { active = button.dataset.page; document.querySelector('.sidebar')?.classList.remove('show'); shell(); });
   document.querySelector('#newChat')?.addEventListener('click', () => {
-    messages = [{ role:'assistant', text:"A new chat has started. How can I help?" }];
+    messages = [];
     saveMessages(); active = 'chat'; shell();
   });
   document.querySelector('#mobileMenu')?.addEventListener('click', () => document.querySelector('.sidebar').classList.toggle('show'));
+  document.querySelector('#promptInput')?.addEventListener('input', event => {
+    event.target.style.height = 'auto';
+    event.target.style.height = Math.min(event.target.scrollHeight, 180) + 'px';
+  });
+  document.querySelector('#promptInput')?.addEventListener('keydown', event => {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      document.querySelector('#chatForm')?.requestSubmit();
+    }
+  });
   document.querySelectorAll('[data-suggest]').forEach(button => button.onclick = () => {
     const input = document.querySelector('#promptInput');
     if (input) { input.value = button.dataset.suggest; input.focus(); }
   });
   document.querySelector('#openChat')?.addEventListener('click', () => { active = 'chat'; shell(); });
   document.querySelector('#clearHistory')?.addEventListener('click', () => {
-    messages = [{ role:'assistant', text:'Conversation history cleared. What would you like to ask?' }];
+    messages = [];
     saveMessages(); shell();
   });
   document.querySelector('#chatForm')?.addEventListener('submit', async event => {
