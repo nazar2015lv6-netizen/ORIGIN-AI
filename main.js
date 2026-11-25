@@ -150,6 +150,21 @@ function bind() {
     const input = document.querySelector('#promptInput');
     if (input) { input.value = button.dataset.suggest; input.focus(); }
   });
+
+  document.querySelector('#exportChat')?.addEventListener('click', exportChat);
+  document.querySelector('#exportData')?.addEventListener('click', exportData);
+  document.querySelectorAll('[data-copy]').forEach(button => button.addEventListener('click', async () => {
+    const item = messages[Number(button.dataset.copy)];
+    if (!item) return;
+    try {
+      await navigator.clipboard.writeText(item.text);
+      button.textContent = 'Copied!';
+      setTimeout(() => { if (button.isConnected) button.textContent = 'Copy'; }, 1400);
+    } catch {
+      button.textContent = 'Select text to copy';
+    }
+  }));
+
   document.querySelector('#openChat')?.addEventListener('click', () => { active = 'chat'; shell(); });
   document.querySelector('#clearHistory')?.addEventListener('click', () => {
     messages = [];
