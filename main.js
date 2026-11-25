@@ -27,7 +27,7 @@ function navItem(id, label, icon) {
   return `<button class="nav-item ${active === id ? 'active' : ''}" data-page="${id}"><span>${icon}</span><b>${label}</b></button>`;
 }
 function pageTitle() {
-  return ({ chat:'AI Chat', image:'AI Image', video:'AI Video', code:'AI Code', history:'History', settings:'Settings' })[active];
+  return ({ chat:'AI Chat', image:'AI Image', video:'AI Video', code:'AI Code', plans:'Plans', history:'History', settings:'Settings' })[active];
 }
 function shell() {
   root.innerHTML = `
@@ -40,6 +40,7 @@ function shell() {
         ${navItem('image','AI Image','▧')}
         ${navItem('video','AI Video','▷')}
         ${navItem('code','AI Code','⌘')}
+        ${navItem('plans','Plans & upgrades','✧')}
         <div class="nav-label second">LIBRARY</div>
         ${navItem('history','History','◷')}
         ${navItem('settings','Settings','⚙')}
@@ -72,9 +73,31 @@ function pageContent() {
   if (active === 'image') return toolPage('AI Image','Create an image from your words — generated on your own device.','A cinematic landscape with glowing mountains at sunset...','Generate image','▧','Free local generation · WebGPU required · First use downloads the image model (large download).');
   if (active === 'video') return toolPage('AI Video','Create short videos from your ideas.','Describe the video you want to create...','Open free Video Studio','▷','A full video model needs several gigabytes of GPU memory and a large download. We are keeping this section free and will not pretend a still image is a video.');
   if (active === 'code') return toolPage('AI Code','Create, explain, and improve code with the local AI model.','Describe the code you need...','Generate code','⌘','Uses the same free on-device AI model as AI Chat.');
+  if (active === 'plans') return plansPage();
   if (active === 'history') return `<div class="page-heading"><div class="eyebrow">LIBRARY</div><h1>History</h1><p>Your recent conversation is saved in this browser.</p></div><div class="empty"><span>◷</span><b>${messages.length > 1 ? 'Recent conversation saved' : 'Nothing here yet'}</b><small>${messages.length > 1 ? 'Open AI Chat to continue your conversation.' : 'Start a new chat to see it here.'}</small><button class="primary history-open" id="openChat">Open AI Chat</button></div>`;
   return `<div class="page-heading"><div class="eyebrow">PERSONALIZATION</div><h1>Settings</h1><p>Manage your ORIGIN AI experience.</p></div><div class="settings-card"><div><b>AI mode</b><small>Runs locally in your browser</small></div><span>Free · No API key</span></div><div class="settings-card"><div><b>Interface language</b><small>App language</small></div><span>English</span></div><div class="settings-card"><div><b>Theme</b><small>Appearance</small></div><span>Dark</span></div><div class="settings-card"><div><b>Export your data</b><small>Download a backup of your conversations</small></div><button class="text-button" id="exportData">Download backup</button></div><div class="settings-card"><div><b>Restore a backup</b><small>Import a previous ORIGIN AI backup file</small></div><button class="text-button" id="importData">Import backup</button><input id="backupFile" type="file" accept="application/json,.json" hidden></div><div class="settings-card"><div><b>Conversation data</b><small>Stored only in this browser</small></div><button class="text-button" id="clearHistory">Clear history</button></div><div class="notice">Your chats stay in this browser. The first AI message downloads a language model to your device; this can take several minutes and uses device storage. Image generation may download an additional model of about 2.3 GB. No paid API is used.</div>`;
 }
+
+function plansPage() {
+  const plans = [
+    { name:'Free', tag:'START HERE', price:'Free', desc:'Explore the essentials at no cost.', features:['AI chat with local model','AI code assistant','Basic chat history on this device','Local image generation when supported'], current:true },
+    { name:'Pro', tag:'FOR EVERYDAY CREATORS', price:'Paid plan', desc:'More room for serious everyday work.', features:['Everything in Free','Higher usage limits','Faster access to supported models','More saved conversations','Priority feature access'] },
+    { name:'Extra', tag:'FOR POWER USERS', price:'Paid plan', desc:'More capability for demanding projects.', features:['Everything in Pro','Expanded image tools and limits','Advanced code workflows','Larger project workspace','Early access to new tools'] },
+    { name:'Modificated', tag:'ULTIMATE WORKSPACE', price:'Paid plan', desc:'The most customizable ORIGIN AI experience.', features:['Everything in Extra','Advanced personalization','Custom workspace presets','Expanded creative workflow limits','Experimental features when available'] }
+  ];
+  return `
+    <div class="page-heading"><div class="eyebrow">ORIGIN AI MEMBERSHIPS</div><h1>Choose your <span class="plans-gradient">power.</span></h1><p>Start free and upgrade when you need more. No surprise charges.</p></div>
+    <div class="plans-grid">${plans.map(plan => `
+      <article class="plan-card ${plan.name === 'Extra' ? 'featured' : ''} ${plan.current ? 'current' : ''}">
+        <div class="plan-tag">${plan.tag}</div><h2>${plan.name}</h2><p class="plan-desc">${plan.desc}</p>
+        <div class="plan-price">${plan.price}</div>
+        <ul>${plan.features.map(feature => `<li><span>✓</span>${feature}</li>`).join('')}</ul>
+        ${plan.current ? '<button class="plan-button selected" disabled>Current plan</button>' : '<button class="plan-button" type="button" data-plan="' + plan.name + '">Coming soon</button>'}
+      </article>`).join('')}</div>
+    <div class="plans-footnote"><b>Transparent by design</b><p>Paid plans are being designed. Checkout, subscriptions and premium model access are not connected yet, so no payment can be taken and no upgrade is activated today. The feature list describes the planned direction, not features currently available.</p></div>
+  `;
+}
+
 function renderMarkdown(source) {
   const escaped = escapeHtml(source);
   return escaped
@@ -186,6 +209,9 @@ function bind() {
     }
   }));
 
+  document.querySelectorAll('[data-plan]').forEach(button => button.addEventListener('click', () => {
+    alert(button.dataset.plan + ' is planned, but payments and subscriptions are not connected yet. You will not be charged.');
+  }));
   document.querySelector('#openChat')?.addEventListener('click', () => { active = 'chat'; shell(); });
   document.querySelector('#clearHistory')?.addEventListener('click', () => {
     messages = [];
