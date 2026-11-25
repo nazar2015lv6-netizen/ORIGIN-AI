@@ -8,7 +8,7 @@ let active = 'chat';
 let busy = false;
 let credits = 120;
 let messages = loadMessages();
-const MEMBERSHIP_PRICES = { Pro: 99, Extra: 199, Modificated: 399 };
+const MEMBERSHIP_PRICES = { Pro: 39, Extra: 79, Modificated: 129 };
 const MEMBERSHIP_CURRENCY = 'UAH / month';
 
 function loadMessages() {
@@ -65,9 +65,9 @@ function showPlansIntro() {
   if (document.querySelector('#plansIntro')) return;
   const plans = [
     { name:'Free', price:'0 ₴', detail:'Core tools to get started' },
-    { name:'Pro', price:'99 ₴ / month', detail:'More room for everyday work' },
-    { name:'Extra', price:'199 ₴ / month', detail:'Expanded creative workspace' },
-    { name:'Modificated', price:'399 ₴ / month', detail:'Maximum planned customization' }
+    { name:'Pro', price:'39 ₴ / month', detail:'More room for everyday work' },
+    { name:'Extra', price:'79 ₴ / month', detail:'Expanded creative workspace' },
+    { name:'Modificated', price:'129 ₴ / month', detail:'Maximum planned customization' }
   ];
   const overlay = document.createElement('div');
   overlay.id = 'plansIntro';
