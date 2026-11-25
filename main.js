@@ -50,7 +50,7 @@ function shell() {
         </div>
       </aside>
       <main class="main">
-        <header class="topbar"><button class="mobile-menu" id="mobileMenu">☰</button><div class="crumb"><b>${pageTitle()}</b><span class="model-pill">⌄ ORIGIN Free</span></div><div class="top-actions"><span class="status"><i></i> Browser AI mode</span><div class="avatar small">O</div></div></header>
+        <header class="topbar"><button class="mobile-menu" id="mobileMenu">☰</button><div class="crumb"><b>${pageTitle()}</b><span class="model-pill">⌄ ORIGIN Free</span></div><div class="top-actions"><span class="status"><i></i> Browser AI mode</span><button class="upgrade" id="plansButton" type="button">✦ Plans &amp; Upgrades</button><div class="avatar small">O</div></div></header>
         <section class="content" id="content">${pageContent()}</section>
       </main>
     </div>`;
@@ -159,6 +159,7 @@ function bind() {
     saveMessages(); active = 'chat'; shell();
   });
   document.querySelector('#mobileMenu')?.addEventListener('click', () => document.querySelector('.sidebar').classList.toggle('show'));
+  document.querySelector('#plansButton')?.addEventListener('click', () => { active = 'plans'; document.querySelector('.sidebar')?.classList.remove('show'); shell(); });
   document.querySelector('#promptInput')?.addEventListener('input', event => {
     event.target.style.height = 'auto';
     event.target.style.height = Math.min(event.target.scrollHeight, 180) + 'px';
